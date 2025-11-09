@@ -1,0 +1,49 @@
+[1m[34mLogs will be synced with wandb.[0m
+Traceback (most recent call last):
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/lerobot_dataset.py", line 94, in __init__
+    self.load_metadata()
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/lerobot_dataset.py", line 104, in load_metadata
+    self.info = load_info(self.root)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/utils.py", line 178, in load_info
+    info = load_json(local_dir / INFO_PATH)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/utils.py", line 146, in load_json
+    with open(fpath) as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'datasets/meta/info.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 402, in hf_raise_for_status
+    response.raise_for_status()
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://huggingface.co/api/datasets/frank_pickplace/refs
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/bin/training", line 10, in <module>
+    sys.exit(train())
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/configs/parser.py", line 226, in wrapper_inner
+    response = fn(cfg, *args, **kwargs)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/src/lerobot_sim/scripts/training.py", line 120, in train
+    dataset = make_dataset(cfg)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/factory.py", line 86, in make_dataset
+    ds_meta = LeRobotDatasetMetadata(
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/lerobot_dataset.py", line 97, in __init__
+    self.revision = get_safe_version(self.repo_id, self.revision)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/utils.py", line 327, in get_safe_version
+    hub_versions = get_repo_versions(repo_id)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/lerobot/common/datasets/utils.py", line 309, in get_repo_versions
+    repo_refs = api.list_repo_refs(repo_id, repo_type="dataset")
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 3251, in list_repo_refs
+    hf_raise_for_status(response)
+  File "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 452, in hf_raise_for_status
+    raise _format(RepositoryNotFoundError, message, response) from e
+huggingface_hub.errors.RepositoryNotFoundError: 404 Client Error. (Request ID: Root=1-69104e02-0e2603085e98d48466b91554;2bcc65b2-79ab-4572-b5e7-1bda038d4e4b)
+
+Repository Not Found for url: https://huggingface.co/api/datasets/frank_pickplace/refs.
+Please make sure you specified the correct `repo_id` and `repo_type`.
+If you are trying to access a private or gated repo, make sure you are authenticated. For more details, see https://huggingface.co/docs/huggingface_hub/authentication

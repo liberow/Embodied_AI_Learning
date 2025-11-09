@@ -1,0 +1,28 @@
+dataset:
+  repo_id: frank_pickplace # Repository ID
+  root: ./datasets # Your root for data file!
+policy:
+  type : smolvla
+  chunk_size: 5
+  n_action_steps: 5
+  device: cuda
+  
+save_checkpoint: true
+output_dir: ./models/smolvla_frank # Save directory
+batch_size: 16
+job_name : smolvla_frank
+resume: false 
+seed : 42
+num_workers: 8
+steps: 20_000
+eval_freq: -1 # No evaluation
+log_freq: 50
+save_checkpoint: true
+save_freq: 5_000
+use_policy_training_preset: true
+  
+wandb:
+  enable: true
+  project: smolvla_frank
+  entity: ai-liber
+  disable_artifact: true

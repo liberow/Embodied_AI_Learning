@@ -1,0 +1,135 @@
+# lerobot sim
+
+这是一个使用 mujoco 实现的仿真环境，数据集和模型策略均集成了 lerobot 的标准。
+
+## 1. 数据采集
+
+1. 在包含语言指令的场景中采集演示数据。右上/右下叠加图像来自数据集；侧视图显示在左上。
+
+2. 数据集特征
+```
+fps = 20,
+features={
+    "observation.image": {"dtype": "image", "shape": (256, 256, 3)},
+    "observation.wrist_image": {"dtype": "image", "shape": (256, 256, 3)},
+    "observation.state": {"dtype": "float32", "shape": (6,)},
+    "action": {"dtype": "float32", "shape": (7,)},
+    "obj_init": {"dtype": "float32", "shape": (9,)},
+}
+```
+
+3. 键盘控制说明
+
+XY 平面: W 后退 / S 前进 / A 左移 / D 右移
+Z 轴:    R 上升 / F 下降
+旋转:    Q 左倾 / E 右倾 / 方向键控制俯仰与偏航
+空格:    切换夹爪
+Z:      重置（丢弃当前回合）
+
+## 2. 可视化
+
+## 3. 训练
+
+### 3.1. install 
+```
+pip install transformers==4.50.3
+pip install num2words
+pip install accelerate
+pip install 'safetensors>=0.4.3'
+```
+
+### 3.2. download dataset
+1. git 
+```
+git clone https://huggingface.co/datasets/Liberow/omy_pickplace
+``` 
+
+2. cli
+```
+# install package
+pip install huggingface_hub
+
+# login
+huggingface-cli login 
+
+# download
+huggingface-cli download Liberow/omy_pickplace \
+    --repo-type dataset \
+    --local-dir ./data/datasets
+```
+
+### 3.3. train 
+```
+python scripts/training.py --config_path configs/train_smolvla.yaml
+```
+
+## 4. 部署
+
+### 4.1. download models
+```
+# download
+huggingface-cli download Liberow/omy_pickplace \
+    --repo-type model \
+    --local-dir ./models
+```
+
+
+## create 
+
+```
+# 创建项目
+uv init lerobot_sim
+
+# 进入项目根目录
+cd lerobot_sim
+
+# 卸载旧的环境
+deactivate  # 先退出当前环境（如果在环境里）
+rm -rf .venv
+
+# pin 到特定版本 
+uv python pin 3.10.12
+
+
+# 创建环境
+uv venv --python 3.10
+
+# 激活环境
+source .venv/bin/activate
+
+# 添加包
+# 安装普通依赖
+uv add mujoco==3.1.6 pyautogui matplotlib scipy safetensors==0.5.3 datasets==3.4.1 transformers==4.50.3
+
+uv add --frozen \
+  "git+https://github.com/huggingface/lerobot.git@10b7b3532543b4adfb65760f02a49b4c537afde7#egg=lerobot"
+
+
+uv add \
+  torch==2.6.0 \
+  torchvision==0.21.0 \
+  torchaudio==2.6.0 \
+  --index-url https://download.pytorch.org/whl/cu124
+
+# 安装依赖
+uv add fastapi
+
+# 开发依赖
+uv add --dev pytest
+
+# 运行:
+PYTHONPATH="src:/home/liber/embodied_ai/lerobot-mujoco-tutorial" python -m lerobot_sim.scripts.data_collection
+```
+
+# 常用命令
+
+| 任务           | 命令                          |
+| ------------ | --------------------------- |
+| 创建项目         | `uv init myapp`             |
+| 创建虚拟环境       | `uv venv`                   |
+| 激活环境         | `source .venv/bin/activate` |
+| 安装依赖         | `uv add <package>`          |
+| 安装开发依赖       | `uv add --dev <package>`    |
+| 更新依赖         | `uv lock --upgrade`         |
+| 运行脚本         | `uv run python main.py`     |
+| 安装项目依赖（恢复环境） | `uv sync`                   |

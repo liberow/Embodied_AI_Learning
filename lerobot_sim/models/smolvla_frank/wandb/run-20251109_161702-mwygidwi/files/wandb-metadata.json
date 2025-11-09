@@ -1,0 +1,43 @@
+{
+  "os":  "Linux-6.8.0-87-generic-x86_64-with-glibc2.35",
+  "python":  "CPython 3.10.12",
+  "startedAt":  "2025-11-09T08:17:02.844648Z",
+  "args":  [
+    "--config_path",
+    "configs/train_smolvla.yaml"
+  ],
+  "program":  "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/bin/training",
+  "codePath":  "lerobot_sim/.venv/bin/training",
+  "codePathLocal":  ".venv/bin/training",
+  "git":  {
+    "remote":  "https://github.com/liberow/Embodied_AI_Learning.git",
+    "commit":  "8e8d321af6bddc5fd875dcd044512960b7441699"
+  },
+  "root":  "models/smolvla_frank",
+  "host":  "ubuntu",
+  "executable":  "/home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/bin/python3",
+  "cpu_count":  4,
+  "cpu_count_logical":  8,
+  "gpu":  "NVIDIA GeForce GTX 1650",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "983349346304",
+      "used":  "522303430656"
+    }
+  },
+  "memory":  {
+    "total":  "16587812864"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce GTX 1650",
+      "memoryTotal":  "4294967296",
+      "cudaCores":  1024,
+      "architecture":  "Turing",
+      "uuid":  "GPU-4ab338a1-4732-7b95-62d9-f84d5fd0059a"
+    }
+  ],
+  "cudaVersion":  "12.4",
+  "writerId":  "87n5o7mkviachp3j3nxxz7cpbw3o6rrg"
+}

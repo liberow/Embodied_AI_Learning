@@ -1,0 +1,82 @@
+Metadata-Version: 2.4
+Name: lerobot-sim
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: <3.11,>=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: accelerate>=1.11.0
+Requires-Dist: datasets==3.4.1
+Requires-Dist: huggingface-hub>=0.36.0
+Requires-Dist: lerobot
+Requires-Dist: matplotlib>=3.10.7
+Requires-Dist: mujoco==3.1.6
+Requires-Dist: num2words>=0.5.14
+Requires-Dist: pyautogui>=0.9.54
+Requires-Dist: safetensors>=0.4.3
+Requires-Dist: scipy>=1.15.3
+Requires-Dist: torch==2.6.0
+Requires-Dist: torchaudio==2.6.0
+Requires-Dist: torchvision==0.21.0
+Requires-Dist: transformers==4.50.3
+
+# lerobot_sim
+
+## create 
+
+```
+# 创建项目
+uv init lerobot_sim
+
+# 进入项目根目录
+cd lerobot_sim
+
+# 卸载旧的环境
+deactivate  # 先退出当前环境（如果在环境里）
+rm -rf .venv
+
+# pin 到特定版本 
+uv python pin 3.10.12
+
+
+# 创建环境
+uv venv --python 3.10
+
+# 激活环境
+source .venv/bin/activate
+
+# 添加包
+# 安装普通依赖
+uv add mujoco==3.1.6 pyautogui matplotlib scipy safetensors==0.5.3 datasets==3.4.1 transformers==4.50.3
+
+uv add --frozen \
+  "git+https://github.com/huggingface/lerobot.git@10b7b3532543b4adfb65760f02a49b4c537afde7#egg=lerobot"
+
+
+uv add \
+  torch==2.6.0 \
+  torchvision==0.21.0 \
+  torchaudio==2.6.0 \
+  --index-url https://download.pytorch.org/whl/cu124
+
+# 安装依赖
+uv add fastapi
+
+# 开发依赖
+uv add --dev pytest
+
+# 运行:
+PYTHONPATH="src:/home/liber/embodied_ai/lerobot-mujoco-tutorial" python -m lerobot_sim.scripts.data_collection
+```
+
+# 常用命令
+
+| 任务           | 命令                          |
+| ------------ | --------------------------- |
+| 创建项目         | `uv init myapp`             |
+| 创建虚拟环境       | `uv venv`                   |
+| 激活环境         | `source .venv/bin/activate` |
+| 安装依赖         | `uv add <package>`          |
+| 安装开发依赖       | `uv add --dev <package>`    |
+| 更新依赖         | `uv lock --upgrade`         |
+| 运行脚本         | `uv run python main.py`     |
+| 安装项目依赖（恢复环境） | `uv sync`                   |

@@ -1,0 +1,214 @@
+_wandb:
+    value:
+        cli_version: 0.22.3
+        e:
+            87n5o7mkviachp3j3nxxz7cpbw3o6rrg:
+                args:
+                    - --config_path
+                    - configs/train_smolvla.yaml
+                codePath: lerobot_sim/.venv/bin/training
+                codePathLocal: .venv/bin/training
+                cpu_count: 4
+                cpu_count_logical: 8
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "983349346304"
+                        used: "522303430656"
+                executable: /home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/bin/python3
+                git:
+                    commit: 8e8d321af6bddc5fd875dcd044512960b7441699
+                    remote: https://github.com/liberow/Embodied_AI_Learning.git
+                gpu: NVIDIA GeForce GTX 1650
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Turing
+                      cudaCores: 1024
+                      memoryTotal: "4294967296"
+                      name: NVIDIA GeForce GTX 1650
+                      uuid: GPU-4ab338a1-4732-7b95-62d9-f84d5fd0059a
+                host: ubuntu
+                memory:
+                    total: "16587812864"
+                os: Linux-6.8.0-87-generic-x86_64-with-glibc2.35
+                program: /home/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim/.venv/bin/training
+                python: CPython 3.10.12
+                root: models/smolvla_frank
+                startedAt: "2025-11-09T08:17:02.844648Z"
+                writerId: 87n5o7mkviachp3j3nxxz7cpbw3o6rrg
+        m: []
+        python_version: 3.10.12
+        t:
+            "1":
+                - 1
+                - 41
+                - 49
+                - 51
+            "2":
+                - 1
+                - 41
+                - 49
+                - 51
+            "3":
+                - 13
+                - 15
+                - 16
+            "4": 3.10.12
+            "5": 0.22.3
+            "10":
+                - 21
+            "12": 0.22.3
+            "13": linux-x86_64
+batch_size:
+    value: 16
+dataset:
+    value:
+        episodes: null
+        image_transforms:
+            enable: false
+            max_num_transforms: 3
+            random_order: false
+            tfs:
+                brightness:
+                    kwargs:
+                        brightness:
+                            - 0.8
+                            - 1.2
+                    type: ColorJitter
+                    weight: 1
+                contrast:
+                    kwargs:
+                        contrast:
+                            - 0.8
+                            - 1.2
+                    type: ColorJitter
+                    weight: 1
+                hue:
+                    kwargs:
+                        hue:
+                            - -0.05
+                            - 0.05
+                    type: ColorJitter
+                    weight: 1
+                saturation:
+                    kwargs:
+                        saturation:
+                            - 0.5
+                            - 1.5
+                    type: ColorJitter
+                    weight: 1
+                sharpness:
+                    kwargs:
+                        sharpness:
+                            - 0.5
+                            - 1.5
+                    type: SharpnessJitter
+                    weight: 1
+        repo_id: frank_pickplace
+        revision: null
+        root: ./datasets
+        use_imagenet_stats: true
+        video_backend: torchcodec
+env:
+    value: null
+eval:
+    value:
+        batch_size: 50
+        n_episodes: 50
+        use_async_envs: false
+eval_freq:
+    value: -1
+job_name:
+    value: smolvla_frank
+log_freq:
+    value: 50
+num_workers:
+    value: 8
+optimizer:
+    value:
+        betas:
+            - 0.9
+            - 0.95
+        eps: 1e-08
+        grad_clip_norm: 10
+        lr: 0.0001
+        type: adamw
+        weight_decay: 1e-10
+output_dir:
+    value: models/smolvla_frank
+policy:
+    value:
+        adapt_to_pi_aloha: false
+        add_image_special_tokens: false
+        attention_mode: cross_attn
+        chunk_size: 5
+        device: cuda
+        empty_cameras: 0
+        expert_width_multiplier: 0.75
+        freeze_vision_encoder: true
+        load_vlm_weights: false
+        max_action_dim: 32
+        max_period: 4
+        max_state_dim: 32
+        min_period: 0.004
+        n_action_steps: 5
+        n_obs_steps: 1
+        normalization_mapping:
+            ACTION: MEAN_STD
+            STATE: MEAN_STD
+            VISUAL: IDENTITY
+        num_expert_layers: -1
+        num_steps: 10
+        num_vlm_layers: 16
+        optimizer_betas:
+            - 0.9
+            - 0.95
+        optimizer_eps: 1e-08
+        optimizer_grad_clip_norm: 10
+        optimizer_lr: 0.0001
+        optimizer_weight_decay: 1e-10
+        pad_language_to: longest
+        prefix_length: -1
+        resize_imgs_with_padding:
+            - 512
+            - 512
+        scheduler_decay_lr: 2.5e-06
+        scheduler_decay_steps: 30000
+        scheduler_warmup_steps: 1000
+        self_attn_every_n_layers: 2
+        tokenizer_max_length: 48
+        train_expert_only: true
+        train_state_proj: true
+        type: smolvla
+        use_amp: false
+        use_cache: true
+        use_delta_joint_actions_aloha: false
+        vlm_model_name: HuggingFaceTB/SmolVLM2-500M-Video-Instruct
+resume:
+    value: false
+save_checkpoint:
+    value: true
+save_freq:
+    value: 5000
+scheduler:
+    value:
+        decay_lr: 2.5e-06
+        num_decay_steps: 30000
+        num_warmup_steps: 1000
+        peak_lr: 0.0001
+        type: cosine_decay_with_warmup
+seed:
+    value: 42
+steps:
+    value: 20000
+use_policy_training_preset:
+    value: true
+wandb:
+    value:
+        disable_artifact: true
+        enable: true
+        entity: ai-liber
+        mode: null
+        notes: null
+        project: smolvla_frank
+        run_id: null

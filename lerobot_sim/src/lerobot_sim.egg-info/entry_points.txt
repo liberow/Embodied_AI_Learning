@@ -1,0 +1,5 @@
+[console_scripts]
+data_collection = lerobot_sim.scripts.data_collection:main
+deploy = lerobot_sim.scripts.deploy:main
+training = lerobot_sim.scripts.training:train
+visualize = lerobot_sim.scripts.visualized_data:main
