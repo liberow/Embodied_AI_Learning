@@ -1,23 +1,18 @@
 import os
-import pyautogui
-import sys
 import time
-import numpy as np
-# import cvxpy as cp
-# import shapely as sp
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import tkinter as tk
-import xml.etree.ElementTree as ET
-from scipy.spatial.distance import cdist
-from PIL import Image
-from xml.dom import minidom
-from functools import partial
-from io import BytesIO
 import math
-from .transforms import t2p, rpy2r
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
+import pyautogui
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import cdist
+from PIL import Image, ImageDraw, ImageFont
 import cv2
-from PIL import ImageDraw, ImageFont
+
+from lerobot_sim.environments.utils.transforms import transform_to_position, rpy_to_rotation
+
 def trim_scale(x,th):
     """
         Trim scale
@@ -136,7 +131,7 @@ class ObjectSpawner:
         if np.random.rand() > 0.5:
             # Rotate the tray by 90° about the z-axis
             self.env.set_R_base_body(body_name='body_obj_tray_5', 
-                                     R=rpy2r(np.deg2rad([0, 0, 90])))
+                                     R=rpy_to_rotation(np.deg2rad([0, 0, 90])))
 
         # --- Get object names to spawn (exclude the tray) ---
         obj_names = self.env.get_body_names(prefix='body_obj_')
@@ -172,7 +167,7 @@ class ObjectSpawner:
             
             # Optionally, assign a random rotation.
             angle = np.random.uniform(0, 360)
-            self.env.set_R_base_body(body_name=name, R=rpy2r(np.deg2rad([0, 0, angle])))
+            self.env.set_R_base_body(body_name=name, R=rpy_to_rotation(np.deg2rad([0, 0, angle])))
 
     def _get_non_colliding_position(self, placed_positions, x_range, y_range, min_dist, tray_xyz):
         """Attempts to sample a position that does not collide with already placed objects (or the tray).
@@ -356,13 +351,13 @@ def uv_T_joi(T_joi,joi_fr,joi_to):
     """ 
         Get unit vector between to JOI poses
     """
-    return np_uv(t2p(T_joi[joi_to]) - t2p(T_joi[joi_fr]))
+    return np_uv(transform_to_position(T_joi[joi_to]) - transform_to_position(T_joi[joi_fr]))
 
 def len_T_joi(T_joi,joi_fr,joi_to):
     """ 
         Get length between two JOI poses
     """
-    return np.linalg.norm(t2p(T_joi[joi_to]) - t2p(T_joi[joi_fr]))
+    return np.linalg.norm(transform_to_position(T_joi[joi_to]) - transform_to_position(T_joi[joi_fr]))
 
 def get_consecutive_subarrays(array,min_element=1):
     """ 

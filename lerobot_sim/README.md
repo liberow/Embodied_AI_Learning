@@ -2,6 +2,16 @@
 
 这是一个使用 mujoco 实现的仿真环境，数据集和模型策略均集成了 lerobot 的标准。
 
+## 0. 配置环境
+
+```
+# 下载依赖
+uv sync
+
+# 激活
+source .venv/bin/activate
+```
+
 ## 1. 数据采集
 
 1. 在包含语言指令的场景中采集演示数据。右上/右下叠加图像来自数据集；侧视图显示在左上。
@@ -73,55 +83,7 @@ huggingface-cli download Liberow/omy_pickplace \
     --local-dir ./models
 ```
 
-
-## create 
-
-```
-# 创建项目
-uv init lerobot_sim
-
-# 进入项目根目录
-cd lerobot_sim
-
-# 卸载旧的环境
-deactivate  # 先退出当前环境（如果在环境里）
-rm -rf .venv
-
-# pin 到特定版本 
-uv python pin 3.10.12
-
-
-# 创建环境
-uv venv --python 3.10
-
-# 激活环境
-source .venv/bin/activate
-
-# 添加包
-# 安装普通依赖
-uv add mujoco==3.1.6 pyautogui matplotlib scipy safetensors==0.5.3 datasets==3.4.1 transformers==4.50.3
-
-uv add --frozen \
-  "git+https://github.com/huggingface/lerobot.git@10b7b3532543b4adfb65760f02a49b4c537afde7#egg=lerobot"
-
-
-uv add \
-  torch==2.6.0 \
-  torchvision==0.21.0 \
-  torchaudio==2.6.0 \
-  --index-url https://download.pytorch.org/whl/cu124
-
-# 安装依赖
-uv add fastapi
-
-# 开发依赖
-uv add --dev pytest
-
-# 运行:
-PYTHONPATH="src:/home/liber/embodied_ai/lerobot-mujoco-tutorial" python -m lerobot_sim.scripts.data_collection
-```
-
-# 常用命令
+## 常用命令
 
 | 任务           | 命令                          |
 | ------------ | --------------------------- |
@@ -133,3 +95,58 @@ PYTHONPATH="src:/home/liber/embodied_ai/lerobot-mujoco-tutorial" python -m lerob
 | 更新依赖         | `uv lock --upgrade`         |
 | 运行脚本         | `uv run python main.py`     |
 | 安装项目依赖（恢复环境） | `uv sync`                   |
+
+
+## 常见问题
+
+1. lerobot 仓库使用了 Git LFS 存储大文件，但远程缺少某些 LFS 对象
+
+* 错误输出
+```
+× Failed to download and build `lerobot @ git+https://github.com/huggingface/lerobot.git@10b7b3532543b4adfb65760f02a49b4c537afde7`
+├─▶ Git operation failed
+╰─▶ process didn't exit successfully: `/usr/bin/git reset --hard 10b7b3532543b4adfb65760f02a49b4c537afde7` (exit status: 128)
+    --- stderr
+    Downloading tests/artifacts/cameras/image_128x128.png (38 KB)
+    Error downloading object: tests/artifacts/cameras/image_128x128.png (9dc9df0): Smudge error: Error downloading tests/artifacts/cameras/image_128x128.png (9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b): error transferring "9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b": [0] remote missing object 9dc9df05797dc0e7b92edc845caab2e4c37c3cfcabb4ee6339c67212b5baba3b
+
+    Errors logged to /root/.cache/uv/git-v0/checkouts/b2400a7a62d6a7cf/10b7b35/.git/lfs/logs/20251110T095024.56350926.log
+    Use `git lfs logs last` to view the log.
+    error: external filter 'git-lfs filter-process' failed
+    fatal: tests/artifacts/cameras/image_128x128.png: smudge filter lfs failed
+```
+
+* 解决方法(跳过LFS文件下载)
+
+```
+# 临时跳过
+GIT_LFS_SKIP_SMUDGE=1 uv run data_collection
+
+# 或永久配置（全局）
+git config --global filter.lfs.smudge "git-lfs smudge --skip"
+git config --global filter.lfs.required false
+
+# 或永久配置（仅当前仓库）
+git config filter.lfs.smudge "git-lfs smudge --skip"
+git config filter.lfs.required false
+```
+
+2. 鼠标问题
+
+* 报错
+```
+root@c81ab3b21da2:/workspace/liber/embodied_ai/Embodied_AI_Learning/lerobot_sim# sudo apt-get install python3-tk python3-dev
+```
+
+* 解决办法
+```
+sudo apt-get install python3-tk python3-dev
+```
+
+## 参考项目
+
+1. [lerobot](https://github.com/huggingface/lerobot)
+
+2. [mujoco](https://github.com/google-deepmind/mujoco)
+
+3. [lerobot-mujoco-tutorial](https://github.com/jeongeun980906/lerobot-mujoco-tutorial)

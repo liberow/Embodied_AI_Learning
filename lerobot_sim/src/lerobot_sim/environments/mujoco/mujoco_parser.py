@@ -10,18 +10,18 @@ from threading import Lock
 
 MUJOCO_VERSION = tuple(map(int,mujoco.__version__.split('.')))
 
-from .transforms import (
-    t2p,
-    t2r,
-    pr2t,
-    r2quat,
-    quat2r,
+from lerobot_sim.environments.utils.transforms import (
+    transform_to_position,
+    transform_to_rotation,
+    pose_to_transform,
+    rotation_to_quaternion,
+    quaternion_to_rotation,
     r2w,
-    rpy2r,
-    meters2xyz,
-    get_rotation_matrix_from_two_points,
+    rpy_to_rotation,
+    depth_to_pointcloud,
+    get_rotation_from_two_points,
 )
-from .utils import (
+from lerobot_sim.environments.utils import (
     trim_scale,
     compute_view_params,
     get_idxs,
@@ -1055,7 +1055,7 @@ class MuJoCoParserClass(object):
             body = self.model.body(body_name) # mujoco body object
             parent_body_name = self.body_names[body.parentid[0]]
             p_body_offset,quat_body_offset = body.pos,body.quat # body offset
-            T_body_offset = pr2t(p_body_offset,quat2r(quat_body_offset)) # [4x4]
+            T_body_offset = pose_to_transform(p_body_offset,quaternion_to_rotation(quat_body_offset)) # [4x4]
             print ("[%2d/%d] body_name:[%s] parent_body_name:[%s]"%
                 (body_idx,self.n_body,colored(body_name,'green'),colored(parent_body_name,'green')))
             print (" body p_offset:[%.2f,%.2f,%.2f] quat_offset:[%.2f,%.2f,%.2f,%.2f]"%
@@ -1630,7 +1630,7 @@ class MuJoCoParserClass(object):
         if forward:
             mujoco.mj_forward(self.model,self.data)
         
-    def set_R_base_body(self,body_name='base',R=rpy2r(np.radians([0,0,0]))):
+    def set_R_base_body(self,body_name='base',R=rpy_to_rotation(np.radians([0,0,0]))):
         """
         Set the orientation of the base body.
         
@@ -1643,7 +1643,7 @@ class MuJoCoParserClass(object):
         """
         jntadr  = self.model.body(body_name).jntadr[0]
         qposadr = self.model.jnt_qposadr[jntadr]
-        self.data.qpos[qposadr+3:qposadr+7] = r2quat(R)
+        self.data.qpos[qposadr+3:qposadr+7] = rotation_to_quaternion(R)
         mujoco.mj_forward(self.model,self.data)
 
     def set_pR_base_body(self,body_name='base',p=np.array([0,0,0]),R=np.eye(3),T=None):
@@ -1660,8 +1660,8 @@ class MuJoCoParserClass(object):
             None
         """
         if T is not None: # if T is not None, it overrides p and R
-            p = t2p(T)
-            R = t2r(T)
+            p = transform_to_position(T)
+            R = transform_to_rotation(T)
         self.set_p_base_body(body_name=body_name,p=p)
         self.set_R_base_body(body_name=body_name,R=R)
                 
@@ -1679,8 +1679,8 @@ class MuJoCoParserClass(object):
             None
         """
         if T is not None: # if T is not None, it overrides p and R
-            p = t2p(T)
-            R = t2r(T)
+            p = transform_to_position(T)
+            R = transform_to_rotation(T)
         self.set_p_base_body(body_name=body_name,p=p)
         self.set_R_base_body(body_name=body_name,R=R)
         
@@ -1711,7 +1711,7 @@ class MuJoCoParserClass(object):
         Returns:
             None
         """
-        self.model.body(body_name).quat = r2quat(R)
+        self.model.body(body_name).quat = rotation_to_quaternion(R)
         if forward: self.forward(increase_tick=False)
         
     def set_pR_body(self,body_name='base',p=np.array([0,0,0]),R=np.eye(3),forward=True):
@@ -1728,7 +1728,7 @@ class MuJoCoParserClass(object):
             None
         """
         self.model.body(body_name).pos = p
-        self.model.body(body_name).quat = r2quat(R)
+        self.model.body(body_name).quat = rotation_to_quaternion(R)
         if forward: self.forward(increase_tick=False)
 
     def set_T_body(self,body_name='base',p=np.array([0,0,0]),R=np.eye(3),T=None,forward=True):
@@ -1745,10 +1745,10 @@ class MuJoCoParserClass(object):
             None
         """
         if T is not None: # if T is not None, it overrides p and R
-            p = t2p(T)
-            R = t2r(T)
+            p = transform_to_position(T)
+            R = transform_to_rotation(T)
         self.model.body(body_name).pos = p
-        self.model.body(body_name).quat = r2quat(R)
+        self.model.body(body_name).quat = rotation_to_quaternion(R)
         if forward: self.forward(increase_tick=False)        
         
     def set_p_mocap(self,mocap_name='',p=np.array([0,0,0])):
@@ -1777,7 +1777,7 @@ class MuJoCoParserClass(object):
             None
         """
         mocap_idx = self.model.body_mocapid[self.body_names.index(mocap_name)]
-        self.data.mocap_quat[mocap_idx] = r2quat(R)
+        self.data.mocap_quat[mocap_idx] = rotation_to_quaternion(R)
 
     def set_pR_mocap(self,mocap_name='',p=np.array([0,0,0]),R=np.eye(3)):
         """
@@ -1936,9 +1936,9 @@ class MuJoCoParserClass(object):
         cam_distance  = self.viewer.cam.distance
 
         p_lookat = cam_lookat
-        R_lookat = rpy2r(np.deg2rad([0,-cam_elevation,cam_azimuth]))
-        T_lookat = pr2t(p_lookat,R_lookat)
-        T_viewer = T_lookat @ pr2t(np.array([-cam_distance,0,0]),np.eye(3))
+        R_lookat = rpy_to_rotation(np.deg2rad([0,-cam_elevation,cam_azimuth]))
+        T_lookat = pose_to_transform(p_lookat,R_lookat)
+        T_viewer = T_lookat @ pose_to_transform(np.array([-cam_distance,0,0]),np.eye(3))
         return T_viewer
     
     def get_pcd_from_depth_img(self,depth_img,fovy=45):
@@ -1964,7 +1964,7 @@ class MuJoCoParserClass(object):
                             (0,0,1)))
 
         # Estimate 3D point from depth image
-        xyz_img = meters2xyz(depth_img,cam_matrix) # [H x W x 3]
+        xyz_img = depth_to_pointcloud(depth_img,cam_matrix) # [H x W x 3]
         xyz_transpose = np.transpose(xyz_img,(2,0,1)).reshape(3,-1) # [3 x N]
         xyzone_transpose = np.vstack((xyz_transpose,np.ones((1,xyz_transpose.shape[1])))) # [4 x N]
 
@@ -2208,11 +2208,11 @@ class MuJoCoParserClass(object):
         cam_matrix = np.array(((focal_scaling,0,img_width/2),
                                (0,focal_scaling,img_height/2),
                                (0,0,1))) # [3 x 3]
-        xyz_img = meters2xyz(depth_rsz,cam_matrix) # [H x W x 3]
+        xyz_img = depth_to_pointcloud(depth_rsz,cam_matrix) # [H x W x 3]
         xyz_transpose = np.transpose(xyz_img,(2,0,1)).reshape(3,-1) # [3 x N]
         xyzone_transpose = np.vstack((xyz_transpose,np.ones((1,xyz_transpose.shape[1])))) # [4 x N]
         # PCD to world coordinate
-        T_view = self.get_T_cam(cam_name=cam_name)@pr2t(p=np.zeros(3),R=rpy2r(np.deg2rad([-45.,90.,45.])))
+        T_view = self.get_T_cam(cam_name=cam_name)@pose_to_transform(p=np.zeros(3),R=rpy_to_rotation(np.deg2rad([-45.,90.,45.])))
         xyzone_world_transpose = T_view @ xyzone_transpose
         xyz_world_transpose = xyzone_world_transpose[:3,:] # [3 x N]
         pcd = np.transpose(xyz_world_transpose,(1,0)) # [N x 3]
@@ -2315,7 +2315,7 @@ class MuJoCoParserClass(object):
         """
         p_body = self.get_p_body(body_name=body_name)
         R_body = self.get_R_body(body_name=body_name)
-        return pr2t(p_body,R_body)
+        return pose_to_transform(p_body,R_body)
     
     def get_pR_body(self,body_name):
         """
@@ -2523,7 +2523,7 @@ class MuJoCoParserClass(object):
         """
         p = self.get_p_sensor(sensor_name)
         R = self.get_R_sensor(sensor_name)
-        return pr2t(p,R)
+        return pose_to_transform(p,R)
     
     def get_sensor_value(self,sensor_name):
         """
@@ -2624,7 +2624,7 @@ class MuJoCoParserClass(object):
         """
         p_cam = self.get_p_cam(cam_name=cam_name)
         R_cam = self.get_R_cam(cam_name=cam_name)
-        return pr2t(p_cam,R_cam)
+        return pose_to_transform(p_cam,R_cam)
     
     def plot_T(
             self,
@@ -2663,8 +2663,8 @@ class MuJoCoParserClass(object):
             None
         """
         if T is not None: # if T is not None, it overrides p and R
-            p = t2p(T)
-            R = t2r(T)
+            p = transform_to_position(T)
+            R = transform_to_rotation(T)
             
         if plot_axis:
             if axis_alpha is None: axis_alpha = 0.9
@@ -2676,7 +2676,7 @@ class MuJoCoParserClass(object):
                 rgba_x = axis_rgba
                 rgba_y = axis_rgba
                 rgba_z = axis_rgba
-            R_x = R@rpy2r(np.deg2rad([0,0,90]))@rpy2r(np.pi/2*np.array([1,0,0]))
+            R_x = R@rpy_to_rotation(np.deg2rad([0,0,90]))@rpy_to_rotation(np.pi/2*np.array([1,0,0]))
             p_x = p+R_x[:,2]*axis_len/2
             if print_xyz: axis_label = 'X-axis'
             else: axis_label = ''
@@ -2688,7 +2688,7 @@ class MuJoCoParserClass(object):
                 rgba  = rgba_x,
                 label = axis_label,
             )
-            R_y = R@rpy2r(np.deg2rad([0,0,90]))@rpy2r(np.pi/2*np.array([0,1,0]))
+            R_y = R@rpy_to_rotation(np.deg2rad([0,0,90]))@rpy_to_rotation(np.pi/2*np.array([0,1,0]))
             p_y = p + R_y[:,2]*axis_len/2
             if print_xyz: axis_label = 'Y-axis'
             else: axis_label = ''
@@ -2700,7 +2700,7 @@ class MuJoCoParserClass(object):
                 rgba  = rgba_y,
                 label = axis_label,
             )
-            R_z = R@rpy2r(np.deg2rad([0,0,90]))@rpy2r(np.pi/2*np.array([0,0,1]))
+            R_z = R@rpy_to_rotation(np.deg2rad([0,0,90]))@rpy_to_rotation(np.pi/2*np.array([0,0,1]))
             p_z = p + R_z[:,2]*axis_len/2
             if print_xyz: axis_label = 'Z-axis'
             else: axis_label = ''
@@ -2940,7 +2940,7 @@ class MuJoCoParserClass(object):
         # Ensure p_fr and p_to are numpy arrays
         p_fr = np.asarray(p_fr)
         p_to = np.asarray(p_to)
-        R_fr2to = get_rotation_matrix_from_two_points(p_fr=p_fr,p_to=p_to)
+        R_fr2to = get_rotation_from_two_points(p_fr=p_fr,p_to=p_to)
         self.viewer.add_marker(
             pos   = p_fr,
             mat   = R_fr2to,
@@ -2965,7 +2965,7 @@ class MuJoCoParserClass(object):
         # Ensure p_fr and p_to are numpy arrays
         p_fr = np.asarray(p_fr)
         p_to = np.asarray(p_to)
-        R_fr2to = get_rotation_matrix_from_two_points(p_fr=p_fr,p_to=p_to)
+        R_fr2to = get_rotation_from_two_points(p_fr=p_fr,p_to=p_to)
         self.viewer.add_marker(
             pos   = p_fr,
             mat   = R_fr2to,
@@ -2991,7 +2991,7 @@ class MuJoCoParserClass(object):
         # Ensure p_fr and p_to are numpy arrays
         p_fr = np.asarray(p_fr)
         p_to = np.asarray(p_to)
-        R_fr2to = get_rotation_matrix_from_two_points(p_fr=p_fr,p_to=p_to)
+        R_fr2to = get_rotation_from_two_points(p_fr=p_fr,p_to=p_to)
         self.viewer.add_marker(
             pos   = (p_fr+p_to)/2,
             mat   = R_fr2to,

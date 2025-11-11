@@ -1,6 +1,6 @@
-import sys
 import numpy as np
-from .utils import (
+
+from lerobot_sim.environments.utils import (
     get_colors,
     get_idxs,
 )

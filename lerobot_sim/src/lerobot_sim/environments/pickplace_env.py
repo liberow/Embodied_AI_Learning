@@ -1,16 +1,16 @@
-import sys
-import random
-import numpy as np
-import xml.etree.ElementTree as ET
-from .utils.mujoco_parser import MuJoCoParserClass
-from .utils.utils import prettify, sample_xyzs, rotation_matrix, add_title_to_img
-from .utils.ik import solve_ik
-from .utils.transforms import rpy2r, r2rpy
-import os
 import copy
 import glfw
+import random
 
-class PickPlaceEnv:
+import numpy as np
+
+from lerobot_sim.environments.base import BaseEnvironment
+from lerobot_sim.environments.mujoco.mujoco_parser import MuJoCoParserClass
+from lerobot_sim.environments.utils.ik import solve_ik
+from lerobot_sim.environments.utils.transforms import rpy_to_rotation, rotation_to_rpy
+from lerobot_sim.environments.utils.utils import sample_xyzs, rotation_matrix, add_title_to_img
+
+class PickPlaceEnv(BaseEnvironment):
     def __init__(self, 
                  xml_path,
                 action_type='eef_pose', 
@@ -27,7 +27,8 @@ class PickPlaceEnv:
         self.env = MuJoCoParserClass(name='Tabletop',rel_xml_path=xml_path)
         self.action_type = action_type
         self.state_type = state_type
-
+        
+        # TODO: get joint names from the xml file
         self.joint_names = ['joint1',
                     'joint2',
                     'joint3',
@@ -50,6 +51,7 @@ class PickPlaceEnv:
             use_rgb_overlay = False,
             loc_rgb_overlay = 'top right',
         )
+    
     def reset(self, seed = None):
         '''
         Reset the environment
@@ -57,13 +59,13 @@ class PickPlaceEnv:
         '''
         if seed != None: np.random.seed(seed=0) 
         q_init = np.deg2rad([0,0,0,0,0,0])
-        q_zero,ik_err_stack,ik_info = solve_ik(
+        q_zero, _, _ = solve_ik(
             env = self.env,
             joint_names_for_ik = self.joint_names,
             body_name_trgt     = 'tcp_link',
             q_init       = q_init, # ik from zero pose
             p_trgt       = np.array([0.3,0.0,1.0]),
-            R_trgt       = rpy2r(np.deg2rad([90,-0.,90 ])),
+            R_trgt       = rpy_to_rotation(np.deg2rad([90,-0.,90 ])),
         )
         self.env.forward(q=q_zero,joint_names=self.joint_names,increase_tick=False)
         
@@ -142,7 +144,7 @@ class PickPlaceEnv:
         if self.action_type == 'eef_pose':
             q = self.env.get_qpos_joints(joint_names=self.joint_names)
             self.p0 += action[:3]
-            self.R0 = self.R0.dot(rpy2r(action[3:6]))
+            self.R0 = self.R0.dot(rpy_to_rotation(action[3:6]))
             q ,ik_err_stack,ik_info = solve_ik(
                 env                = self.env,
                 joint_names_for_ik = self.joint_names,
@@ -200,7 +202,6 @@ class PickPlaceEnv:
             cam_name='sideview')
         return self.rgb_agent, self.rgb_ego
         
-
     def render(self, teleop=False, idx = 0):
         '''
         Render the environment
@@ -305,7 +306,7 @@ class PickPlaceEnv:
             return np.zeros(7, dtype=np.float32), True
         if self.env.is_key_pressed_once(key=glfw.KEY_SPACE):
             self.gripper_state =  not  self.gripper_state
-        drot = r2rpy(drot)
+        drot = rotation_to_rpy(drot)
         action = np.concatenate([dpos, drot, np.array([self.gripper_state],dtype=np.float32)],dtype=np.float32)
         return action, False
     
@@ -357,19 +358,18 @@ class PickPlaceEnv:
             p_mug_blue: np.array, position of the blue mug
             p_plate: np.array, position of the plate
         '''
-        self.env.set_p_base_body(body_name='body_obj_mug_5',p=p_mug_red)
-        self.env.set_R_base_body(body_name='body_obj_mug_5',R=np.eye(3,3))
-        self.env.set_p_base_body(body_name='body_obj_mug_6',p=p_mug_blue)
-        self.env.set_R_base_body(body_name='body_obj_mug_6',R=np.eye(3,3))
-        self.env.set_p_base_body(body_name='body_obj_plate_11',p=p_plate)
-        self.env.set_R_base_body(body_name='body_obj_plate_11',R=np.eye(3,3))
+        self.env.set_p_base_body(body_name='body_obj_mug_5', p=p_mug_red)
+        self.env.set_R_base_body(body_name='body_obj_mug_5', R=np.eye(3,3))
+        self.env.set_p_base_body(body_name='body_obj_mug_6', p=p_mug_blue)
+        self.env.set_R_base_body(body_name='body_obj_mug_6', R=np.eye(3,3))
+        self.env.set_p_base_body(body_name='body_obj_plate_11', p=p_plate)
+        self.env.set_R_base_body(body_name='body_obj_plate_11', R=np.eye(3,3))
         self.step_env()
-
 
     def get_ee_pose(self):
         '''
         get the end effector pose of the robot + gripper state
         '''
         p, R = self.env.get_pR_body(body_name='tcp_link')
-        rpy = r2rpy(R)
-        return np.concatenate([p, rpy],dtype=np.float32)
+        rpy = rotation_to_rpy(R)
+        return np.concatenate([p, rpy], dtype=np.float32)

@@ -1,7 +1,7 @@
 [project]
 name = "lerobot-sim"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Lerobot algorithm experiment project using Mujoco as the simulation environment."
 readme = "README.md"
 requires-python = ">=3.10,<3.11"
 dependencies = [
